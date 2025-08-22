@@ -1,0 +1,518 @@
+
+CREATE TABLE Suppliers (
+    SupplierID INT NOT NULL,
+    Name VARCHAR(100),
+    Address VARCHAR(255),
+    PhoneNumber VARCHAR(15),
+    PRIMARY KEY (SupplierID)
+);
+
+CREATE TABLE Product_Inventory (
+    ProductID INT NOT NULL,
+    ProductName VARCHAR(100),
+    Category VARCHAR(50),
+    StockQuantity INT,
+    ExpirationDate DATE,
+    Price DECIMAL(10,2),
+    Recall BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (ProductID)
+);
+
+CREATE TABLE Employees (
+    EmployeeID INT NOT NULL,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Phone VARCHAR(15),
+    Email VARCHAR(100),
+    Address VARCHAR(255),
+    DateOfBirth DATE,
+    EmployeePosition VARCHAR(50),
+    PRIMARY KEY (EmployeeID),
+    CHECK (EmployeePosition IN ('Pharmacist', 'Technician', 'Cashier', 'Manager','Sales Rep'))
+);
+	
+CREATE TABLE Insurances (
+    InsuranceID INT NOT NULL,
+    ProviderName VARCHAR(100),
+    PolicyNumber VARCHAR(50),
+    PolicyDate DATE,
+    Coverage VARCHAR(255),
+    PRIMARY KEY (InsuranceID)
+);
+
+
+CREATE TABLE Transactions (
+    TransactionID INT NOT NULL,
+    CustomerID INT,
+    EmployeeID INT,
+    TransactionDate DATE,
+    TotalAmount DECIMAL(10,2),
+    PaymentMethod VARCHAR(50),
+    ProductID INT,
+    PrescriptionID INT,
+    Quantity INT,
+    PRIMARY KEY (TransactionID),
+    FOREIGN KEY (CustomerID)
+        REFERENCES Customers(CustomerID),
+    FOREIGN KEY (EmployeeID)
+        REFERENCES Employees(EmployeeID),
+    FOREIGN KEY (ProductID)
+        REFERENCES Product_Inventory(ProductID),
+    FOREIGN KEY (PrescriptionID)
+        REFERENCES Prescriptions(PrescriptionID)
+);
+
+CREATE TABLE Customers (
+    CustomerID INT NOT NULL,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Phone VARCHAR(15),
+    Email VARCHAR(100),
+    Address VARCHAR(255),
+    DateOfBirth DATE,
+    Insurance INT,
+    Allergy VARCHAR(100),
+    PCP VARCHAR(10),
+    PRIMARY KEY (CustomerID),
+    FOREIGN KEY (Insurance)
+        REFERENCES Insurances(InsuranceID)
+        ON DELETE SET NULL,
+    FOREIGN KEY (PCP)
+        REFERENCES Prescribers(NPI)
+        ON DELETE SET NULL
+);
+
+CREATE TABLE Prescribers (
+    NPI VARCHAR(10) NOT NULL,
+    DEANumber VARCHAR(9),
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Phone VARCHAR(15),
+    Email VARCHAR(100),
+    Specialization VARCHAR(100),
+    PRIMARY KEY (NPI)
+);
+
+CREATE TABLE Prescriptions (
+    PrescriptionID INT NOT NULL,
+    CustomerID INT,
+    DoctorNPI VARCHAR(10),
+    PrescriptionDate DATE,
+    ProductID INT,
+    Dosage VARCHAR(50),
+    Quantity INT,
+    Direction TEXT,
+    PRIMARY KEY (PrescriptionID),
+    FOREIGN KEY (CustomerID)
+        REFERENCES Customers(CustomerID),
+    FOREIGN KEY (DoctorNPI)
+        REFERENCES Prescribers(NPI)
+        ON DELETE SET NULL,
+    FOREIGN KEY (ProductID)
+        REFERENCES Product_Inventory(ProductID)
+);
+
+CREATE TABLE Orders (
+    OrderID INT NOT NULL,
+    EmployeeID INT,
+    OrderDate DATE NOT NULL,
+    TotalAmount DECIMAL(10,2),
+    Status VARCHAR(20) CHECK (Status IN ('Pending', 'Shipped', 'Delivered', 'Canceled')),
+    ProductID INT,
+    SupplierID INT,
+    PRIMARY KEY (OrderID),
+    FOREIGN KEY (EmployeeID) REFERENCES Employees(EmployeeID),
+    FOREIGN KEY (ProductID) REFERENCES Product_Inventory(ProductID),
+    FOREIGN KEY (SupplierID) REFERENCES Suppliers(SupplierID)
+);
+
+
+
+INSERT INTO Suppliers (SupplierID, Name, Address, PhoneNumber)
+VALUES (1023, 'MedSupply Co.', '123 Health St, Austin, TX', '512-123-4567'),
+       (5948, 'Global Pharma', '456 Wellness Ave, Houston, TX', '713-987-6543'),
+       (3872, 'EcoMed Solutions', '789 Nature Rd, Dallas, TX', '214-555-1212'),
+       (7615, 'CarePlus Distributors', '321 Pharmacy Dr, San Antonio, TX', '210-333-7890'),
+       (4189, 'Trusted Supplies', '111 Main St, El Paso, TX', '915-888-4321'),
+       (5267, 'Precision Health', '888 Clinic Rd, Austin, TX', '512-444-9999');
+	   
+INSERT INTO Product_Inventory VALUES
+(101, 'Amoxicillin 500mg', 'Prescription', 200, '2026-01-01', 12.50, TRUE),
+(102, 'Ibuprofen 200mg', 'OTC', 500, '2025-09-30', 5.00, FALSE),
+(103, 'Oxycodone 5mg', 'C2', 100, '2026-03-15', 29.99, FALSE),
+(104, 'Lisinopril 10mg', 'Prescription', 300, '2026-06-01', 8.99, FALSE),
+(105, 'Vitamin D 1000 IU', 'Supplement', 450, '2025-12-31', 12.49, FALSE),
+(106, 'Metformin 500mg', 'Prescription', 150, '2025-07-30', 11.99, TRUE),
+(107, 'Norco 5/325mg','C2',100, '2026-12-31', 125.50, FALSE);	 	
+
+	    
+INSERT INTO Employees VALUES
+(1, 'John', 'Smith', '123-111-2222', 'john.smith@example.com', '456 Center Blvd, NY', '1990-05-10', 'Pharmacist'),
+(2, 'Alice', 'Johnson', '321-222-3333', 'alice.j@example.com', '789 West Dr, TX', '1985-08-22', 'Technician'),
+(3, 'Bob', 'Williams', '555-666-7777', 'bob.williams@example.com', '101 East St, CA', '1992-11-03', 'Manager'),   
+(4, 'Emily', 'Davis', '444-777-8888', 'emily.davis@example.com', '202 North Ave, IL', '1988-03-14', 'Cashier'),
+(5, 'Michael', 'Brown', '666-999-1111', 'michael.brown@example.com', '303 South Blvd, FL', '1975-12-29', 'Sales Rep');	   
+	   
+INSERT INTO Insurances VALUES
+(201, 'Aetna', 'AET12345', '2023-01-01', 'Full'),
+(202, 'BlueCross', 'BC7890', '2022-07-15', 'Partial'),
+(203, 'UnitedHealth', 'UH65432', '2024-02-20', 'Full'),
+(204, 'Cigna', 'CI98765', '2023-11-10', 'Extended'),
+(205, 'Humana', 'HU43210', '2025-05-05', 'Basic');
+   
+INSERT INTO Prescribers VALUES
+('1001000001', 'BC1473826', 'Laura', 'Hughes', '800-123-4567', 'laura.h@example.com', 'General Practitioner'),
+('1001000002', 'MA9283741', 'David', 'Nguyen', '800-555-9999', 'd.nguyen@example.com', 'Pediatrician'),
+('1001000003', NULL, 'Nancy', 'Wright', '800-888-1212', NULL, 'Cardiologist'),
+('1001000004', 'FP6359172', 'Rachel', 'Carter', '800-234-5678', 'rachel.carter@example.com', 'Dermatologist'),
+('1001000005', 'XD2845613', 'William', 'Scott', '800-987-6543', 'william.scott@example.com', 'Orthopedic Surgeon')
+;
+	   
+INSERT INTO Customers VALUES
+(2150, 'Emily', 'Brown', '111-222-3333', 'emily.b@example.com', '900 Ocean Ave, FL', '1988-06-15', 201, 'Penicillin', '1001000001'),
+(2151, 'Michael', 'Green', '444-555-6666', 'm.green@example.com', '123 Forest Rd, WA', '2010-12-05', 202, NULL, NULL),
+(2152, 'Sara', 'Lee', '777-888-9999', 'sara.lee@example.com', '321 Hilltop Ln, CO', '2012-03-22', 203, 'Peanuts', NULL),
+(2153, 'John', 'Doe', '123-456-7890', 'john.doe@example.com', '456 Maple St, TX', '1985-11-25', 204, 'Amoxicillin', '1001000001'),
+(2154, 'Olivia', 'Martinez', '321-654-9870', 'olivia.m@example.com', '789 Pine Blvd, CA', '1992-01-15', 205, NULL, NULL),
+(2155, 'James', 'Wilson', '555-777-8888', 'james.wilson@example.com', '101 Birch Dr, NV', '1990-09-10', 202, 'Sulfa Drugs', NULL),
+(2156, 'Sophia', 'Taylor', '666-888-9999', 'sophia.taylor@example.com', '102 Oak Ln, IL', '2011-07-20', 201, 'Aspirin', '1001000002'),
+(2157, 'Daniel', 'Miller', '777-999-1111', 'daniel.miller@example.com', '303 Cedar Ave, NY', '1989-12-10', 201, 'Penicillin', NULL);
+
+INSERT INTO Prescriptions VALUES
+(1301, 2150, '1001000001', '2025-02-01', 101, '500mg', 30, 'Take one capsule three times daily with food'),
+(1302, 2151, '1001000005', '2025-03-05', 102, '200mg', 60, 'Take one tablet every 6 hours as needed'),
+(1303, 2152, '1001000005', '2025-03-05', 103, '5mg', 20, 'Take one tablet every 8 hours as needed'),
+(1304, 2153, '1001000001', '2025-03-12', 104, '10mg', 30, 'Take one tablet once daily'),
+(1305, 2154, '1001000002', '2025-03-15', 105, '1000 IU', 90, 'Take one tablet daily with food'),
+(1306, 2157, '1001000005', '2025-04-20', 107, '5/325mg', 60, 'Take one tablet twice daily with meals');
+
+INSERT INTO Transactions VALUES
+(401, 2150, 1, '2025-02-01', 37.50, 'Credit Card', 101, 1301, 30),
+(402, 2151, 2, '2025-03-05', 5.00, 'Cash', 102, 1302, 60),
+(403, 2152, 3, '2025-03-10', 29.99, 'Insurance', 103, 1303, 20),
+(404, 2153, 1, '2025-03-12', 8.99, 'Credit Card', 104, 1304, 30),
+(405, 2154, 2, '2025-03-15', 12.49, 'Cash', 105, 1305, 90),
+(406, 2157, 4, '2025-04-22', 23.98, 'Insurance', 107, 1306, 60);	   
+
+
+
+INSERT INTO Orders (OrderID, EmployeeID, OrderDate, TotalAmount, Status, ProductID, SupplierID)
+VALUES
+(501, 1, '2025-01-15', 1250.00, 'Pending', 101, 1023),
+(502, 2, '2025-01-20', 500.00, 'Shipped', 102, 1023),
+(503, 3, '2025-02-05', 2999.00, 'Delivered', 103, 5948),
+(504, 4, '2025-02-10', 899.00, 'Pending', 104, 5948),
+(505, 5, '2025-02-18', 1249.00, 'Shipped', 105, 3872),
+(506, 2, '2025-03-01', 1798.50, 'Delivered', 106, 7615),
+(507, 1, '2025-03-05', 6250.00, 'Pending', 107, 5948),
+(508, 3, '2025-03-10', 450.00, 'Canceled', 102, 1023);
+
+
+
+# Suppliers Use Cases
+1. Add New Supplier
+
+INSERT INTO Suppliers VALUES
+(8991, 'HealthFirst Supply', '789 Elm St, TX', '555-111-2222');
+
+2. Delete Supplier
+
+DELETE FROM Suppliers
+WHERE SupplierID = 8991;
+
+3. Update Supplier Address
+UPDATE Suppliers
+SET Address = '987 Health Park, Austin, TX'
+WHERE SupplierID = 1023;
+
+4. Count Total Suppliers
+
+SELECT COUNT(*) AS TotalSuppliers
+FROM Suppliers;
+
+
+
+
+Product_Inventory Use Cases
+5. Add New Product
+
+INSERT INTO Product_Inventory VALUES
+(108, 'Aspirin 100mg', 'OTC', 400, '2026-10-01', 4.99, FALSE);
+
+6. Delete Product
+
+DELETE FROM Product_Inventory
+WHERE ProductID = 108;
+
+7. Update Product Price
+
+UPDATE Product_Inventory
+SET Price = 5.49
+WHERE ProductID = 102;
+
+8. Find Total Stock Quantity
+
+SELECT SUM(StockQuantity) AS TotalStock
+FROM Product_Inventory;
+
+
+
+** Employees
+
+
+9. Add New Employee
+
+INSERT INTO Employees VALUES
+(6, 'Sarah', 'Connor', '222-333-4444', 'sarah.connor@example.com', '505 Future St, TX', '1980-10-10', 'Cashier');
+
+10. Delete Employee
+
+DELETE FROM Employees
+WHERE EmployeeID = 6;
+
+11. Update Employee Email
+
+UPDATE Employees
+SET Email = 'alice.johnson@newemail.com'
+WHERE EmployeeID = 2;
+
+12. Count Total Employees
+SELECT COUNT(*) AS TotalEmployees
+FROM Employees;
+
+Insurances Use Cases
+13. Add New Insurance Provider
+
+INSERT INTO Insurances VALUES
+(206, 'NewCare', 'NC12345', '2024-01-01', 'Partial');
+
+14. Delete Insurance Provider
+DELETE FROM Insurances
+WHERE InsuranceID = 206;
+
+15. Update Insurance Coverage
+UPDATE Insurances
+SET Coverage = 'Extended'
+WHERE InsuranceID = 205;
+
+16. Count Insurance Providers
+
+SELECT COUNT(*) AS TotalInsurances
+FROM Insurances;
+
+17. Add New Customer
+INSERT INTO Customers VALUES
+(2158, 'Liam', 'Smith', '999-555-2222', 'liam.smith@example.com', '200 Maple Ave, TX', '2005-06-25', 201, 'Peanuts', '1001000002');
+
+18. Delete Customer
+DELETE FROM Customers
+WHERE CustomerID = 2158;
+
+
+19. Update Customer Phone Number
+
+UPDATE Customers
+SET Phone = '888-777-6666'
+WHERE CustomerID = 2150;
+
+20. Count Total Customers
+
+SELECT COUNT(*) AS TotalCustomers
+FROM Customers;
+
+
+Prescribers Use Cases
+
+21. Add New Prescriber
+
+INSERT INTO Prescribers VALUES
+('1001000006', 'DE1234567', 'Anna', 'Williams', '800-000-1111', 'anna.williams@example.com', 'Neurologist');
+
+22. Delete Prescriber
+
+DELETE FROM Prescribers
+WHERE NPI = '1001000006';
+
+23. Update Prescriber Email
+
+UPDATE Prescribers
+SET Email = 'd.nguyen@newemail.com'
+WHERE NPI = '1001000002';
+
+24. Count Total Prescribers
+
+SELECT COUNT(*) AS TotalPrescribers
+FROM Prescribers;
+
+
+** Transactions Use Cases
+
+25. Add New Transaction
+
+INSERT INTO Transactions VALUES
+(407, 2151, 2, '2025-05-10', 15.00, 'Cash', 102, 1302, 30);
+
+26. Delete Transaction
+
+DELETE FROM Transactions
+WHERE TransactionID = 407;
+
+27. Update Transaction Payment Method
+
+UPDATE Transactions
+SET PaymentMethod = 'Insurance'
+WHERE TransactionID = 401;
+
+28. Find Total Revenue
+
+SELECT SUM(TotalAmount) AS TotalRevenue
+FROM Transactions;
+
+
+** Orders Use Cases
+
+29. Add New Order
+
+INSERT INTO Orders (OrderID, EmployeeID, OrderDate, TotalAmount, Status, ProductID, SupplierID)
+VALUES
+(509, 1, '2025-05-12', 1500.00, 'Pending', 101, 1023);
+
+
+30. Delete Order
+
+DELETE FROM Orders
+WHERE OrderID = 509;
+
+31. Update Order Status
+
+UPDATE Orders
+SET Status = 'Shipped'
+WHERE OrderID = 501;
+
+32. Count Total Orders
+
+SELECT COUNT(*) AS TotalOrders
+FROM Orders;
+
+Prescriptions Use Cases
+
+33. Add New Prescription
+Actor: Pharmacist
+Steps:
+1. Pharmacist inputs new prescription details.
+2. Pharmacist saves the new prescription.
+INSERT INTO Prescriptions VALUES
+(1308, 2152, '1001000004', '2025-06-01', 102, '200mg', 90, 'Take one tablet twice daily');
+
+34. Delete Prescription
+Actor: Pharmacist
+Steps:
+1. Pharmacist selects a prescription to delete.
+2. Pharmacist deletes the prescription record.
+DELETE FROM Prescriptions
+WHERE PrescriptionID = 1308;
+```
+35. Update Prescription Dosage
+Actor: Pharmacist
+Steps:
+1. Pharmacist edits the dosage instructions.
+2. Pharmacist saves the updated prescription.
+UPDATE Prescriptions
+SET Dosage = '400mg'
+WHERE PrescriptionID = 1302;
+
+36. Count Total Prescriptions
+Actor: Manager
+Steps:
+1. Manager runs a report to count all prescriptions.
+SELECT COUNT(*) AS TotalPrescriptions
+FROM Prescriptions;
+
+
+** Join Queries 
+
+37. List Orders with Product and Supplier Info
+
+SELECT o.OrderID, p.ProductName, s.Name AS SupplierName, o.Status
+FROM Orders o
+JOIN Product_Inventory p ON o.ProductID = p.ProductID
+JOIN Suppliers s ON o.SupplierID = s.SupplierID;
+
+38. List Transactions with Customer and Employee Info
+
+SELECT t.TransactionID, c.FirstName, c.LastName, e.FirstName AS EmployeeFirstName, e.LastName AS EmployeeLastName, t.TotalAmount
+FROM Transactions t
+JOIN Customers c ON t.CustomerID = c.CustomerID
+JOIN Employees e ON t.EmployeeID = e.EmployeeID;
+
+39. Prescriptions with Product and Doctor Info
+SELECT pr.PrescriptionID, p.ProductName, d.FirstName AS DoctorFirstName, d.LastName AS DoctorLastName, pr.Dosage
+FROM Prescriptions pr
+JOIN Product_Inventory p ON pr.ProductID = p.ProductID
+JOIN Prescribers d ON pr.DoctorNPI = d.NPI;
+
+40. Customers with Insurance Providers
+SELECT c.FirstName, c.LastName, i.ProviderName
+FROM Customers c
+LEFT JOIN Insurances i ON c.Insurance = i.InsuranceID;
+
+41. Doctors and Prescription Counts
+SELECT d.FirstName, d.LastName, COUNT(pr.PrescriptionID) AS TotalPrescriptions
+FROM Prescribers d
+LEFT JOIN Prescriptions pr ON d.NPI = pr.DoctorNPI
+GROUP BY d.NPI;
+
+42. C2 Controlled Substance Transactions
+SELECT t.TransactionDate, c.FirstName, c.LastName, p.ProductName, t.Quantity
+FROM Transactions t
+JOIN Customers c ON t.CustomerID = c.CustomerID
+JOIN Product_Inventory p ON t.ProductID = p.ProductID
+WHERE p.Category = 'C2';
+
+43. Recalled Products with Supplier Contact Info
+
+SELECT p.ProductName, s.Name AS SupplierName, s.Address, s.PhoneNumber
+FROM Product_Inventory p
+JOIN Orders o ON p.ProductID = o.ProductID
+JOIN Suppliers s ON o.SupplierID = s.SupplierID
+WHERE p.Recall = TRUE;
+
+
+44. List all transactions that were paid using Insurance
+
+SELECT 
+    t.TransactionID,
+    c.FirstName,
+    c.LastName,
+    t.TotalAmount
+FROM Transactions t
+JOIN Customers c ON t.CustomerID = c.CustomerID
+WHERE t.PaymentMethod = 'Insurance';
+
+
+
+45. Find all Products that were Prescribed by Doctors
+SELECT 
+    p.ProductName,
+    pr.Dosage,
+    d.FirstName AS DoctorFirstName,
+    d.LastName AS DoctorLastName
+FROM Prescriptions pr
+JOIN Product_Inventory p ON pr.ProductID = p.ProductID
+JOIN Prescribers d ON pr.DoctorNPI = d.NPI;
+
+
+
+
+46. Find Customers who made Transactions and what Products they bought
+
+SELECT 
+    c.FirstName,
+    c.LastName,
+    p.ProductName,
+    t.TransactionDate
+FROM Transactions t
+JOIN Customers c ON t.CustomerID = c.CustomerID
+JOIN Product_Inventory p ON t.ProductID = p.ProductID;
+
+
